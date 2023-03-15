@@ -710,6 +710,30 @@ class ParticleState(State):
 State.register(ParticleState)  # noqa: E305
 
 
+class KernelParticleState(ParticleState):
+    """Kernel Particle State type
+
+    This is a particle state object which describes the state as a
+    distribution of particles and Kernel covariance
+    """
+
+    kernel_covar: CovarianceMatrix = Property(default=None,
+                                              doc='Kernel covariance value. Default `None`.')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.kernel_covar is None:
+            self.kernel_covar = np.identity(self.state_vector.shape[1]) * (1 / self.state_vector.shape[1])
+
+    @property
+    def mean(self):
+        return self.state_vector @ self.weight
+
+    @property
+    def covar(self):
+        return self.state_vector @ self.kernel_covar @ self.state_vector.T
+
+
 class MultiModelParticleState(ParticleState):
     """Multi-Model Particle State type
 
